@@ -96,11 +96,15 @@ def main():
 
     def ResolveModel():
         df_, hospitales_ = aplicarFiltros()
+        
         hosLoc = hospitales_.iloc[:,2:4].values.tolist()
         hosNombres = hospitales_.iloc[:,0].values.tolist()
         n_hospitales = len(hosLoc)
         n_pacientes = len(df_)
-        n_camas_en_hospitales = [hospitales.iloc[i,5] for i in range(n_hospitales)]
+        if(rdbCamasUCI.isChecked()):
+            n_camas_en_hospitales = [hospitales.iloc[i,5] for i in range(n_hospitales)]
+        else:
+            n_camas_en_hospitales = [hospitales.iloc[i,4] for i in range(n_hospitales)]
         #print(n_camas_en_hospitales)
         n_camas_total = sum(n_camas_en_hospitales)
 
@@ -138,7 +142,7 @@ def main():
             for j in range(n_camas_en_hospitales[i]):
                 for k in range(n_pacientes):
                     #l += [(1+coeff[0]*pacientes_contagio[k]-int(coeff[1]*dist(pacientes_loc[k],hospitales_loc[i])))*x[(i,j,k)]]
-                    l += [(100+int(100*pacientes_contagio[k]/5)-int(100*dist(pacientes_loc[k],hospitales_loc[i])/max_dist))*x[(i,j,k)]]
+                    l += [(100+int(200*pacientes_contagio[k]/5)-int(100*dist(pacientes_loc[k],hospitales_loc[i])/max_dist))*x[(i,j,k)]]
         #model.Add(sum(l) > 0)
         model.Maximize(sum(l))
 
@@ -205,6 +209,9 @@ def main():
     chkHospList = []
     for i in range(len(hosNombres)):
         chkHospList += [QCheckBox(hosNombres[i])]
+    lblCantCamas = QLabel("Camas:")
+    rdbCamasUCI = QRadioButton('Solo camas UCI')
+    rdbCamasUCI.setChecked(True)
     btnAplicar = QPushButton('Aplicar')
     btnAplicar.clicked.connect(aplicarFiltros)
     btnResolver = QPushButton('Resolver')
@@ -216,8 +223,11 @@ def main():
     for i in range(len(hosNombres)):
         chkHospList[i].setChecked(True)
         OptionLayout.addWidget(chkHospList[i])
+    OptionLayout.addWidget(lblCantCamas)
+    OptionLayout.addWidget(rdbCamasUCI)
     OptionLayout.addWidget(btnAplicar)
     OptionLayout.addWidget(btnResolver)
+
     MainLayout.addLayout(OptionLayout)
     MainLayout.addWidget(webMap)
     MainWindow.setLayout(MainLayout)
